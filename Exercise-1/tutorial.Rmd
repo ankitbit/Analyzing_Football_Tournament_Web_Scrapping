@@ -1,0 +1,119 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+
+
+### About the database
+* vol	Volunteer
+
+* sex	Gender
+
+* age	Age
+
+* school	School years
+
+* calcaprt	Calcap: reaction time
+
+* calcapld	Language Discrimination: Mean reaction time
+
+* corcub	Corsi cubes: total score
+
+* sdmttoco	SDMT: Number of correct answers
+
+* lnsscore	Letter Number Sequencing: Total Score
+
+* waisvocd	WAIS vocabulary III (direct score)
+
+Notes:
+------
+Some information on the selected variables for this exercise:
+   - CalCAP: http://www.calcaprt.com/calcap.htm
+   - SDMT: http://www.sciencedirect.com/science/article/pii/S0887617705001174
+   - Letter number sequencing: http://www.cognitiveatlas.org/task/letter_number_sequencing
+   - WAIS: http://en.wikipedia.org/wiki/Wechsler_Adult_Intelligence_Scale
+
+
+
+
+
+Go to this [Microsoft](https://www.microsoft.com/en-us/download/confirmation.aspx?id=54920) link and download the driver for MS Access 2016 
+```{r load the RODBC package}
+if(!require(RODBC)){
+  cat("Installing the RODBC Package")
+  install.packages("RODBC")
+}else{
+  cat("Loading the RODBC package!")
+  library(RODBC)
+  cat("\n RODBC Package loading finished....")
+}
+```
+
+We will now ateempt to read the database
+* function **odbcConnectAccess2007()** is used to create a connection between the desired database and **R** 
+
+* Parameter "pwd" is used for specifying the password to the password protected database. In our case, we have the "StudyENTE.mdb" database and it is protected with password "ceopracr".
+
+```{r creating connection}
+channel <- odbcConnectAccess2007("StudyENTE.mdb", pwd="ceopracr")
+```
+
+Now, It will be very beneficial if we can perform some SQL operations on the database so that It will provide us with the freedom to manipulate, transform and analyze the database for specific applications.
+
+So, lets store the three tables in three data frames for the purpose of our analysis.
+```{r performng SQL operations on database}
+D1 <- sqlQuery( channel , paste ("select * from Cannabis"))
+D2 <- sqlQuery( channel , paste ("select * from Controles"))
+D3 <- sqlQuery( channel , paste ("select * from XTC"))
+```
+
+Let us view the datasets one by one:
+```{r viewing D1 (table Cannabis)}
+head(D1,8)
+```
+
+```{r viewing D2 (table Controles)}
+head(D2,8)
+```
+
+```{r viewing D3 (table XTC)}
+head(D3,8)
+```
+
+Our goal now is to merge all the three tables in a singe dataframe. Since, the data in the tables is already in a clean format, we can do this task in a relatively simpler. If the data in the tables had not been in a consistent format with respect to each other, we would first had to define a primary key and perform join operation based on that.
+
+Two types of database join operations are there: Horizontal (merge function) and Vertical (rbind)
+```{r binding the three tables in one dataframe}
+mydbase<- rbind(D1,D2,D3)
+dim(mydbase)
+```
+
+Suppose, we wish to join the dataframes with information about their source. Then we have to do something like this-
+```{r joining based on origin of data}
+
+sourced_D1<-D1
+sourced_D1$group<-1
+sourced_D2<-D2
+sourced_D2$group<-2
+sourced_D3<-D3
+sourced_D3$group<-3
+
+sourced_dbase<-rbind(sourced_D1, sourced_D2, sourced_D3)
+
+print(head(sourced_dbase), row.names = FALSE)
+```
+
+
+In this observation, 1 corresponds to Cannabis, 2 corresponds to Controles and 3 corresponds to XTC
+### References
+1. [Data Management](https://www.statmethods.net/management/merging.html): Data types, Importing Data, Keyboard Input, Database Input, Exporting Data, Viewing Data, Variable Labels, Value Labels, Missing Data, Date Values.
+
+2. 
+
+
+
+

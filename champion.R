@@ -12,6 +12,8 @@ url2 <- "http://www.livefutbol.com/calendario/esp-primera-division-2004-2005-spi
 liga07 <- readHTMLTable(url2, header = TRUE)[[4]]
 head(liga07, 4)
 
+
+
 #generic function for creating url for extracting data from the web portal
 generate_url<-function(country_name, year){
   
@@ -30,10 +32,16 @@ generate_url<-function(country_name, year){
   }
   
   if(country_name=="Italy"){
+    
     country_url<- "http://www.livefutbol.com/calendario/ita-serie-a"
     year_url<- generate_year(year)
-    extension_url<-"spieltag/38/"
-    return(paste(country_url, year_url, extension_url, sep = "-"))
+    extension_url_1<-"spieltag/38/"
+    extension_url_2<-"spieltag/34"
+    if(year>2004){
+      return(paste(country_url, year_url, extension_url_1, sep = "-"))
+    }else{
+      return(paste(country_url, year_url, extension_url_2, sep = "-"))
+    }
   }
   
   if(country_name=="Germany"){
@@ -56,58 +64,41 @@ driver_function<-function(country_name,year){
   return(league)
 }
 
-champion<-function(country_name, year, attempts=T){
-  if(attempts==T){
+champion<-function(country_name, year){
+  
     #Performing legitimate country_name check
-    if(country_name%in%c("Spain", "Germany", "Italy", "England")){
+    if(country_name%in%c("Spain", "Germany", "Italy", "England") & is.na(country_name)==F){
       
       #If the country_name is legitimate, performing check for "Recent Year criteria" i.e. Year>1970
-      if(year>1970 & is.nan(year)==F & is.infinite(year)==F){
+      if(year>1970 & is.nan(year)==F & is.infinite(year)==F & is.na(year)==F){
         x<-as.data.frame(driver_function(country_name, year))
-        y<-as.vector(x$V3[1])
+        y<-as.vector(as.character(x$V3[1]))
         cat("Champion in", country_name, "in", year, ":", y)
+        
       }else{
-        print("Oh Oh! You just entered an invalid year. Neverthless, you may try again for one time.");
+        print("Oh Oh! You just entered an invalid year.")
         
         new_year<-input_function()
-        champion(country_name, new_year, attempts = F)
+        champion(country_name, new_year)
       }
     }else{
-      year_list<-c("Spain", "Germany", "Italy", "England");
-      print("Please enter a valid country from the list");
-      return(paste0(year_list))
+      country_list<-c("Spain", "Germany", "Italy", "England");
+      print("Please enter a valid country from the list")
+      print(country_list)
+      new_country<-input_country_name();
+      champion(new_country, year)
     }
-  }
-  
-  if(attempts==F){
-    print("number of at exceeded")
-  }
-  
-  
 }
 
 input_function<-function(){
-  n <- readline(prompt="Enter a valid year after summer of '69 (i.e. 1969) :P  ")
+  n <- readline(prompt="Enter a valid year after summer of '69 (for e.g. 1971) :  ")
   return(as.integer(n))
 }
-
+input_country_name<-function(){
+  country<-readline(prompt = "Enter the name of the Country to query:  ")
+  return(as.character(country))
+}
 #Function reurn error if country not in the four specified
 #Error message specifying user to choose country options
 #Error message for year if it is not recent
-#Check if both the things are not NAN, NA or Inf
-check_iteration<-function(num,flag=1){
-  if(flag==1){
-    print("one try left!")
-    #check if num is non infinite
-    if(is.na(num)){
-      print("finite")
-    }else{
-      x<-input_function()
-      check_iteration(x,flag = 0)
-    }
-  }
-  if(flag==0){
-    print("No tries left!")
-  }
-}
-
+#Check if both the entered/input things are not NAN, NA or Inf

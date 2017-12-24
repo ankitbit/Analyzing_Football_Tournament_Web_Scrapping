@@ -41,7 +41,7 @@ in the following way: the 4 variables must be standardized (so that they have av
 
 h) What are the mean, the median, the standard deviation and the range of the variable composed in each group?
 
-i) Add the data frame created as a new table to the StudyENTE.mdb database.
+**i)** Add the data frame created as a new table to the StudyENTE.mdb database.
 
 j) Use the sqlQuery function (from the RODBC package) to extract (only) the variables study group and age
 (categorized) of the new StudyENTE.mdb table

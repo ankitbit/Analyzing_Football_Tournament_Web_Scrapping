@@ -68,5 +68,11 @@ summarise(group_by(sorted_cleaned, group), mean=mean(composite, na.rm = T),
 
 #1(i)
 
-
+#1(n)
+write.xlsx(iris[iris$Species=="setosa",], file = "myfile.xlsx", sheetName = "Sheet1", 
+           col.names = TRUE,
+           row.names = F, append = T)
+write.xlsx(iris[iris$Species=="versicolor",], file = "myfile.xlsx", sheetName = "Sheet2", 
+           col.names = TRUE,
+           row.names = F, append = T)
 

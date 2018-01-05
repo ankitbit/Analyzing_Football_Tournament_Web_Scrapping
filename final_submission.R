@@ -25,32 +25,21 @@ dim(mydbase)
 
 #1(b)----------------------------------------------------------------------------------------------
 sourced_D1<-D1
-sourced_D1$group<-1
+sourced_D1$group<-c("Cannabis")
 sourced_D2<-D2
-sourced_D2$group<-2
+sourced_D2$group<-c("Controles")
 sourced_D3<-D3
-sourced_D3$group<-3
+sourced_D3$group<-c("Ecstasy")
 
-sourced_dbase<-rbind(sourced_D1, sourced_D2, sourced_D3)
+sourced_dbase<-rbind(sourced_D3, sourced_D2, sourced_D1)
 rm(sourced_D1,sourced_D2, sourced_D3)
 #converting the variable group to a factor using as.factor() function 
 sourced_dbase$group <-as.factor(sourced_dbase$group)
 #the factor has levels 1, 2, 3 for Cannabis, Controles and XTC respectively
-print(head(sourced_dbase,6), row.names = FALSE)
-print(tail(sourced_dbase,6), row.names = FALSE)
+sourced_dbase$group <- relevel(sourced_dbase$group, ref = "Ecstasy")
 
-# #1(b)
-# # Converting the values of our variable for conversion to factor
-# for(i in seq(sourced_dbase$group)){
-#   if(sourced_dbase$group[i]==1){
-#     sourced_dbase$group[i]<-"Extasis"
-#   }else{
-#     sourced_dbase$group[i]<-"Not Extasis"
-#   }
-# }
-# #Converting the variable group to a factor
-# sourced_dbase$group<-as.factor(sourced_dbase$group)
-# 
+levels(sourced_dbase$group)
+
 
 #1(c)
 #creating a sorted dataframe based on the group and volunteer id
@@ -78,8 +67,8 @@ sorted_cleaned$sex<- revalue(sorted_cleaned$sex, c("1"="Male", "2"="Female"))
 #new<-sorted_cleaned$age
 sorted_cleaned$age_cat<-cut(sorted_cleaned$age, breaks = c(-Inf,21,24,Inf),
                             labels = c("<= 21","22-24", ">=25")) #with default labels
-sorted_cleaned$age_cat<-cut(sorted_cleaned$age, breaks = c(-Inf,21,24,Inf), 
-                            labels = c("low","medium","high")) # with labels defined
+# sorted_cleaned$age_cat<-cut(sorted_cleaned$age, breaks = c(-Inf,21,24,Inf), 
+#                             labels = c("low","medium","high")) # with labels defined
 
 #1(g)
 #creating standardized variable for all four vairables requested
@@ -117,16 +106,18 @@ sqlUpdate(channel, sorted_cleaned, tablename = "New_Data_Frame")
 sqlQuery(channel, paste("select group, age_cat from New_Data_Frame"))
 
 #1(k)
+mosaicplot(~group + age, data = sorted_cleaned)
+#Even the second version seems to be working quite nicely
 mosaicplot(~age + group, data = sorted_cleaned)
-#mosaicplot(~group+age, data = sorted_cleaned)
 
 #1(l)
 #install.packages("descr")
 library(descr)
-#For the numerical age variable, the conditional distribution by study group
-CrossTable(sorted_cleaned$age, sorted_cleaned$group)
 #for the categorical age variable, the conditional distribution by study group
 CrossTable(sorted_cleaned$age_cat, sorted_cleaned$group)
+
+#For the numerical age variable, the conditional distribution by study group
+CrossTable(sorted_cleaned$age, sorted_cleaned$group)
 
 
 #1(m)
@@ -140,13 +131,13 @@ odbcClose(channel)
 
 #install.packages("xlsx")
 library(xlsx)
-group_1<-sorted_cleaned[sorted_cleaned$group==1,]
+group_1<-sorted_cleaned[sorted_cleaned$group=="Ecstasy",]
 write.xlsx(select(group_1, -group), file = "myfile.xlsx", sheetName = "Group1", 
            col.names = TRUE, row.names = F, append = T)
-group_2<-sorted_cleaned[sorted_cleaned$group==2,]
+group_2<-sorted_cleaned[sorted_cleaned$group=="Cannabis",]
 write.xlsx(select(group_2, -group), file = "myfile.xlsx", sheetName = "Group2", 
            col.names = TRUE, row.names = F, append = T)
-group_3<-sorted_cleaned[sorted_cleaned$group==3,]
+group_3<-sorted_cleaned[sorted_cleaned$group=="Controles",]
 write.xlsx(select(group_3, -group), file = "myfile.xlsx", sheetName = "Group3", 
            col.names = TRUE, row.names = F, append = T)
 
@@ -190,7 +181,7 @@ write.xlsx(select(group_3, -group), file = "myfile.xlsx", sheetName = "Group3",
 #max(my_data_2_$corcub)=24
 
 library(ggplot2)
-
+my_data_2_ <-sorted_cleaned
 bar <- ggplot(data = my_data_2_) + 
   geom_bar(
     mapping = aes(x = corcub), fill = "blue", 
@@ -326,10 +317,16 @@ generate_url<-function(country_name, year){
     year_url<- generate_year(year)
     extension_url_1<-"spieltag/38/"
     extension_url_2<-"spieltag/34/"
+    extension_url_3<-"spieltag/30/"
     if(year>2004){
       return(paste(country_url, year_url, extension_url_1, sep = "-"))
     }else{
-      return(paste(country_url, year_url, extension_url_2, sep = "-"))
+      if(year>1988){
+        return(paste(country_url, year_url, extension_url_2, sep = "-"))
+      }else{
+        return(paste(country_url, year_url, extension_url_3, sep = "-"))
+      }
+      
     }
   }
   
